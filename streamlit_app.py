@@ -2,70 +2,57 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 # ==========================================
-# PROJECT B — INTERACTIVE WEIGHTED SCORING
+# PAGE SETTINGS
 # ==========================================
 
 st.set_page_config(
-    page_title="Project B | Personal Product Choice",
-    page_icon="📊",
+    page_title="From Product Performance to Personal Choice",
+    page_icon="🌿",
     layout="wide"
 )
 
 # ==========================================
-# 1. COLORS AND DESIGN
+# COLORS AND DESIGN
 # ==========================================
 
-BLUE = "#527C95"
-GREEN = "#78A99F"
-YELLOW = "#D7B765"
-DARK = "#243746"
-BACKGROUND = "#F8F9F7"
+st.markdown("""
+<style>
+.stApp {
+    background-color: #F8F9F7;
+    color: #243746;
+}
 
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background-color: #F8F9F7;
-        color: #243746;
-    }
+h1, h2, h3 {
+    color: #365F78 !important;
+}
 
-    h1, h2, h3, h4, p, label {
-        color: #243746 !important;
-    }
+[data-testid="stMarkdownContainer"] p,
+[data-testid="stMarkdownContainer"] li {
+    color: #243746;
+}
 
-    [data-testid="stMarkdownContainer"] {
-        color: #243746;
-    }
+[data-testid="stMetricValue"],
+[data-testid="stMetricLabel"] {
+    color: #243746 !important;
+}
 
-    [data-testid="stAlert"] {
-        color: #243746;
-    }
+.stProgress > div > div > div > div {
+    background-color: #78A99F;
+}
 
-    div[data-testid="stMetricValue"] {
-        color: #243746 !important;
-    }
-
-    div[data-testid="stMetricLabel"] {
-        color: #243746 !important;
-    }
-
-    .stButton button {
-        background-color: #527C95;
-        color: white;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+div[data-testid="stSlider"] label {
+    color: #243746 !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # ==========================================
-# 2. REAL EXPERIMENTAL DATA
+# REAL EXPERIMENTAL DATA
 # ==========================================
 
-data = {
+df = pd.DataFrame({
     "Product": [
         "Always Infinity FlexFoam Size 2 Super Absorbency 32ct",
         "Always Pocket FlexFoam Size 1 Regular 22ct",
@@ -74,9 +61,7 @@ data = {
     "Opening Time (s)": [8.5, 4.2, 7.0],
     "Absorption (mL)": [42, 28, 34],
     "Cost per Pad ($)": [0.31, 0.41, 0.20]
-}
-
-df = pd.DataFrame(data)
+})
 
 short_names = [
     "Always Infinity",
@@ -84,18 +69,9 @@ short_names = [
     "CVS Health Overnight"
 ]
 
-product_colors = [BLUE, GREEN, YELLOW]
-
 # ==========================================
-# 3. NORMALIZATION
+# NORMALIZATION FUNCTION
 # ==========================================
-
-# Min-Max Normalization
-# All scores range from 0 to 100.
-#
-# Opening time: lower is better.
-# Absorption: higher is better.
-# Cost: lower is better.
 
 def normalize(values, higher_is_better=True):
 
@@ -108,17 +84,15 @@ def normalize(values, higher_is_better=True):
         return np.full(len(values), 100.0)
 
     if higher_is_better:
-        scores = (
+        return (
             (values - minimum)
             / (maximum - minimum)
         ) * 100
-    else:
-        scores = (
-            (maximum - values)
-            / (maximum - minimum)
-        ) * 100
 
-    return scores
+    return (
+        (maximum - values)
+        / (maximum - minimum)
+    ) * 100
 
 
 opening_scores = normalize(
@@ -137,60 +111,43 @@ cost_scores = normalize(
 )
 
 # ==========================================
-# 4. WEIGHTED SCORING FUNCTION
+# TITLE
 # ==========================================
 
-def calculate_scores(
-    opening_weight,
-    absorption_weight,
-    cost_weight
-):
+st.title("From Product Performance to Personal Choice")
 
-    total_scores = (
-        opening_scores * opening_weight
-        + absorption_scores * absorption_weight
-        + cost_scores * cost_weight
-    )
-
-    return total_scores
-
+st.divider()
 
 # ==========================================
-# 5. TITLE AND INTRODUCTION
+# 1. PURPOSE
 # ==========================================
 
-st.title(
-    "From Product Performance to Personal Choice"
-)
+st.header("1. Purpose")
 
-st.subheader(
-    "Interactive Weighted Scoring & Sensitivity Analysis"
+st.write(
+    "This project aims to help women with different "
+    "needs make informed menstrual product choices."
 )
 
 st.write(
-    "This interactive mathematical model explores "
-    "how different user priorities influence "
-    "menstrual product rankings."
-)
-
-st.write(
-    "Adjust the weights assigned to packaging "
-    "accessibility, absorption capacity, and "
-    "affordability to examine how product "
-    "recommendations change."
+    "By comparing packaging opening time, "
+    "absorption capacity, and cost per pad, "
+    "the model allows users to identify products "
+    "that best match their individual priorities."
 )
 
 st.divider()
 
 # ==========================================
-# 6. PRODUCT PERFORMANCE
+# 2. PRODUCT COMPARISON
 # ==========================================
 
-st.header("1. Product Performance")
+st.header("2. Product Comparison")
 
 st.write(
-    "The following measurements were provided "
-    "from standardized product testing."
+    "The following table presents experimental "
+    "measurements and recorded costs for "
+    "three menstrual products."
 )
 
 st.dataframe(
@@ -199,27 +156,30 @@ st.dataframe(
     hide_index=True
 )
 
-st.info(
-    "Lower opening time indicates easier packaging "
-    "access. Higher absorption indicates greater "
-    "measured capacity. Lower cost indicates "
-    "better affordability."
+st.caption(
+    "Opening time is measured in seconds (s), "
+    "absorption capacity in milliliters (mL), "
+    "and cost in US dollars per pad."
 )
 
 st.divider()
 
 # ==========================================
-# 7. INTERACTIVE WEIGHT SLIDERS
+# 3. WEIGHTED DECISION MODEL
 # ==========================================
 
-st.header("2. Adjust Your Priorities")
+st.header("3. Weighted Decision Model")
 
 st.write(
-    "Move the sliders to decide which "
-    "product characteristics matter most to you."
+    "Different users may value product "
+    "characteristics differently. "
+    "Adjust the weights below to find "
+    "which product best matches your priorities."
 )
 
-opening_weight_percent = st.slider(
+# Packaging weight
+
+opening_weight = st.slider(
     "Packaging Accessibility (%)",
     min_value=0,
     max_value=100,
@@ -227,305 +187,144 @@ opening_weight_percent = st.slider(
     step=5
 )
 
-absorption_weight_percent = st.slider(
+# Absorption weight
+
+absorption_weight = st.slider(
     "Absorption Capacity (%)",
     min_value=0,
-    max_value=100 - opening_weight_percent,
-    value=min(30, 100 - opening_weight_percent),
+    max_value=100 - opening_weight,
+    value=min(30, 100 - opening_weight),
     step=5
 )
 
-cost_weight_percent = (
-    100
-    - opening_weight_percent
-    - absorption_weight_percent
+# Cost weight
+
+cost_weight = (
+    100 - opening_weight - absorption_weight
 )
 
-st.markdown(
-    f"**Affordability Weight: "
-    f"{cost_weight_percent}% (Automatically Calculated)**"
-)
-
-col1, col2, col3 = st.columns(3)
-
-col1.metric(
-    "Packaging Accessibility",
-    f"{opening_weight_percent}%"
-)
-
-col2.metric(
-    "Absorption Capacity",
-    f"{absorption_weight_percent}%"
-)
-
-col3.metric(
-    "Affordability",
-    f"{cost_weight_percent}%"
+st.write(
+    f"**Affordability Weight: {cost_weight}%** "
+    "(Automatically Calculated)"
 )
 
 # Convert percentages to decimals
 
-w_opening = opening_weight_percent / 100
-w_absorption = absorption_weight_percent / 100
-w_cost = cost_weight_percent / 100
+w1 = opening_weight / 100
+w2 = absorption_weight / 100
+w3 = cost_weight / 100
 
-# ==========================================
-# 8. CALCULATE WEIGHTED SCORES
-# ==========================================
+# Weighted scoring calculation
 
-scores = calculate_scores(
-    w_opening,
-    w_absorption,
-    w_cost
+total_scores = (
+    w1 * opening_scores
+    + w2 * absorption_scores
+    + w3 * cost_scores
 )
 
 results = pd.DataFrame({
     "Product": short_names,
-    "Weighted Score": scores,
-    "Color": product_colors
+    "Score": total_scores
 })
 
 results = results.sort_values(
-    "Weighted Score",
+    "Score",
     ascending=False,
     kind="stable"
 ).reset_index(drop=True)
 
-st.divider()
+st.subheader("Your Results")
 
-# ==========================================
-# 9. WEIGHTED SCORING RESULTS
-# ==========================================
+for i, row in results.iterrows():
 
-st.header("3. Weighted Scoring Results")
-
-st.write(
-    "Each product receives a score from 0 to 100 "
-    "based on the selected priorities."
-)
-
-for index, row in results.iterrows():
-
-    st.markdown(
-        f"### {index + 1}. {row['Product']}"
+    st.write(
+        f"**{i + 1}. {row['Product']} "
+        f"— {row['Score']:.1f} / 100**"
     )
 
     st.progress(
-        float(row["Weighted Score"]) / 100
+        float(row["Score"]) / 100
     )
 
-    st.write(
-        f"**Score: {row['Weighted Score']:.1f} / 100**"
+# Handle ties
+
+best_score = results["Score"].max()
+
+best_products = results.loc[
+    np.isclose(results["Score"], best_score),
+    "Product"
+].tolist()
+
+if len(best_products) == 1:
+    st.success(
+        "Recommended Product: "
+        + best_products[0]
     )
-
-winner = results.iloc[0]["Product"]
-
-st.success(
-    f"Highest-scoring product under these weights: "
-    f"{winner}"
-)
+else:
+    st.success(
+        "Highest-scoring Products (Tie): "
+        + ", ".join(best_products)
+    )
 
 st.caption(
-    "These scores represent relative performance "
-    "among the three tested products, not absolute "
-    "product quality or a medical recommendation."
+    "Recommendations are based on the selected "
+    "weights and relative performance among "
+    "the three tested products."
 )
-
-# ==========================================
-# 10. SIMPLE SENSITIVITY ANALYSIS
-# ==========================================
-
-st.divider()
-
-st.header("4. Sensitivity Analysis")
-
-st.write(
-    "Sensitivity analysis examines whether "
-    "product rankings change when user "
-    "priorities are different."
-)
-
-st.write(
-    "Three example scenarios are compared below."
-)
-
-# Scenario weights:
-# (Packaging, Absorption, Affordability)
-
-scenarios = {
-    "Easy to Open": (0.70, 0.20, 0.10),
-    "High Absorption": (0.15, 0.70, 0.15),
-    "Low Cost": (0.15, 0.15, 0.70)
-}
-
-scenario_results = []
-
-for scenario_name, weights in scenarios.items():
-
-    scenario_scores = calculate_scores(
-        weights[0],
-        weights[1],
-        weights[2]
-    )
-
-    for i, product in enumerate(short_names):
-
-        scenario_results.append({
-            "Scenario": scenario_name,
-            "Product": product,
-            "Score": scenario_scores[i]
-        })
-
-scenario_df = pd.DataFrame(scenario_results)
-
-# ==========================================
-# 11. SIMPLE SCENARIO COMPARISON CHART
-# ==========================================
-
-fig, ax = plt.subplots(
-    figsize=(10, 5.5)
-)
-
-scenario_names = list(scenarios.keys())
-
-x = np.arange(len(scenario_names))
-
-for i, product in enumerate(short_names):
-
-    product_data = scenario_df[
-        scenario_df["Product"] == product
-    ]
-
-    ax.plot(
-        x,
-        product_data["Score"].values,
-        marker="o",
-        markersize=9,
-        linewidth=2.5,
-        color=product_colors[i],
-        label=product
-    )
-
-ax.set_xticks(x)
-
-ax.set_xticklabels(
-    scenario_names,
-    fontsize=11
-)
-
-ax.set_ylim(0, 105)
-
-ax.set_ylabel(
-    "Weighted Score (0–100)",
-    fontsize=12
-)
-
-ax.set_title(
-    "How Product Rankings Change with User Priorities",
-    fontsize=15,
-    fontweight="bold",
-    color=DARK,
-    pad=18
-)
-
-ax.grid(
-    axis="y",
-    alpha=0.2
-)
-
-ax.legend(
-    loc="upper center",
-    bbox_to_anchor=(0.5, -0.15),
-    ncol=3,
-    frameon=False
-)
-
-ax.spines["top"].set_visible(False)
-ax.spines["right"].set_visible(False)
-
-fig.patch.set_facecolor("white")
-ax.set_facecolor("white")
-
-plt.tight_layout()
-
-st.pyplot(fig)
-
-plt.close(fig)
-
-# ==========================================
-# 12. SCENARIO RESULTS TABLE
-# ==========================================
-
-st.subheader("Scenario Comparison")
-
-comparison = scenario_df.pivot(
-    index="Scenario",
-    columns="Product",
-    values="Score"
-)
-
-comparison = comparison.reindex(scenario_names)
-
-st.dataframe(
-    comparison.round(1),
-    use_container_width=True
-)
-
-# ==========================================
-# 13. EXPLAIN THE RESULTS
-# ==========================================
-
-st.subheader("What Do These Results Mean?")
-
-for scenario_name in scenario_names:
-
-    subset = scenario_df[
-        scenario_df["Scenario"] == scenario_name
-    ]
-
-    best_score = subset["Score"].max()
-
-    best_products = subset[
-        np.isclose(subset["Score"], best_score)
-    ]["Product"].tolist()
-
-    st.write(
-        f"**{scenario_name}:** "
-        f"Highest-scoring product(s): "
-        f"{', '.join(best_products)} "
-        f"({best_score:.1f}/100)"
-    )
 
 st.divider()
 
 # ==========================================
-# 14. RESEARCH CONCLUSION
+# 4. MATHEMATICAL FORMULA
 # ==========================================
 
-st.header("5. Research Conclusion")
+st.header("4. Mathematical Formula")
 
 st.write(
-    "The model demonstrates that product rankings "
-    "depend on the priorities assigned to "
-    "packaging accessibility, absorption capacity, "
-    "and affordability."
+    "The weighted decision model calculates "
+    "a total score using the following formula:"
+)
+
+st.latex(
+    r"S = w_1x_1 + w_2x_2 + w_3x_3"
+)
+
+st.markdown("""
+Where:
+
+- **S** = Total weighted score
+- **x₁** = Normalized packaging accessibility score
+- **x₂** = Normalized absorption capacity score
+- **x₃** = Normalized affordability score
+- **w₁, w₂, w₃** = User-selected weights
+""")
+
+st.latex(
+    r"w_1+w_2+w_3=1"
 )
 
 st.write(
-    "Rather than identifying one universally "
-    "best menstrual product, weighted scoring "
-    "can help individuals compare products "
-    "according to their own needs."
+    "Each measurement is normalized to a "
+    "score between 0 and 100 so that "
+    "different units can be compared."
 )
 
 st.write(
-    "Future research could include more products, "
-    "repeated measurements, and user feedback "
-    "to improve the reliability and usefulness "
-    "of this decision-support model."
+    "For absorption capacity, higher values "
+    "receive higher scores. For opening time "
+    "and cost, lower values receive higher scores."
+)
+
+st.subheader("Example Using Your Current Weights")
+
+st.latex(
+    rf"S = {w1:.2f}x_1"
+    rf" + {w2:.2f}x_2"
+    rf" + {w3:.2f}x_3"
 )
 
 st.caption(
-    "Project B | Interactive Mathematical "
-    "Decision-Support Model"
+    "The weights are selected by users. "
+    "Scores are calculated using Min-Max "
+    "Normalization of the three tested products."
 )
