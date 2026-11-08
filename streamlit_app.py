@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 from matplotlib.patches import Patch
 
-# ============================================
-# PROJECT B — INTERACTIVE DECISION MODEL
-# ============================================
+# ==========================================
+# PAGE CONFIGURATION
+# ==========================================
 
 st.set_page_config(
     page_title="Project B | Personalized Product Selection",
@@ -16,9 +16,9 @@ st.set_page_config(
     layout="wide"
 )
 
-# ============================================
-# COLORS — MORANDI ACADEMIC PALETTE
-# ============================================
+# ==========================================
+# COLOR PALETTE
+# ==========================================
 
 BLUE = "#426A82"
 DARK_BLUE = "#243746"
@@ -29,27 +29,17 @@ LIGHT_TEAL = "#E4EFED"
 
 PRODUCT_COLORS = [BLUE, TEAL, YELLOW]
 
-# ============================================
-# GLOBAL STYLE
-# ============================================
+# ==========================================
+# GLOBAL CSS
+# ==========================================
 
 st.markdown("""
 <style>
-/* Main background */
 .stApp {
     background-color: #F8F8F5;
     color: #243746;
 }
 
-/* Main content text */
-.stApp p,
-.stApp li,
-.stApp label,
-.stApp span {
-    color: #243746;
-}
-
-/* Headings */
 .stApp h1,
 .stApp h2,
 .stApp h3,
@@ -57,67 +47,74 @@ st.markdown("""
     color: #426A82 !important;
 }
 
-/* Markdown text */
 [data-testid="stMarkdownContainer"] p,
-[data-testid="stMarkdownContainer"] li {
-    color: #243746 !important;
-}
-
-/* Widget labels */
+[data-testid="stMarkdownContainer"] li,
 [data-testid="stWidgetLabel"] p {
     color: #243746 !important;
 }
 
-/* Metrics */
 [data-testid="stMetricLabel"] p,
 [data-testid="stMetricValue"] {
     color: #243746 !important;
 }
 
-/* Slider labels */
 [data-testid="stSlider"] label {
     color: #243746 !important;
 }
 
-/* Captions */
-.stCaption {
+[data-testid="stCaptionContainer"] p {
     color: #536773 !important;
 }
 
-/* Dividers */
 hr {
     border-color: #B8C9CC;
 }
 
-/* Buttons */
 div.stButton > button {
     background-color: #426A82;
-    color: white !important;
+    color: #FFFFFF !important;
     border-radius: 8px;
 }
 
-/* Dataframe container */
-[data-testid="stDataFrame"] {
-    border-radius: 10px;
+/* Custom notice box */
+.research-notice {
+    background-color: #E4EFED;
+    color: #243746 !important;
+    padding: 18px 22px;
+    border-left: 5px solid #426A82;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1.6;
+    margin: 18px 0 24px 0;
+}
+
+.research-notice strong {
+    color: #243746 !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ============================================
+# ==========================================
 # TITLE
-# ============================================
+# ==========================================
 
-st.title("From Product Performance to Personal Choice")
+st.title(
+    "From Product Performance to Personal Choice"
+)
 
 st.subheader(
     "Interactive Weighted Scoring & Sensitivity Analysis"
 )
 
-st.info(
-    "ILLUSTRATIVE DATA ONLY — "
-    "Replace all sample measurements with actual "
-    "experimental results before research presentation."
-)
+# FIXED: LIGHT NOTICE WITH DARK TEXT
+
+st.markdown("""
+<div class="research-notice">
+    <strong>ILLUSTRATIVE DATA ONLY</strong> —
+    Replace all sample measurements with actual
+    experimental results before research presentation.
+</div>
+""", unsafe_allow_html=True)
 
 st.write("""
 This interactive mathematical model explores how
@@ -129,9 +126,10 @@ absorption capacity, and affordability to examine
 how product recommendations change.
 """)
 
-# ============================================
-# DATA — REPLACE WITH ACTUAL RESULTS
-# ============================================
+# ==========================================
+# SAMPLE DATA
+# REPLACE WITH REAL EXPERIMENTAL RESULTS
+# ==========================================
 
 df = pd.DataFrame({
     "Product": [
@@ -156,12 +154,16 @@ df = pd.DataFrame({
     ]
 })
 
-# ============================================
+# ==========================================
 # NORMALIZATION
-# ============================================
+# ==========================================
 
 def normalize(values, higher_better=True):
-    values = np.asarray(values, dtype=float)
+
+    values = np.asarray(
+        values,
+        dtype=float
+    )
 
     minimum = np.min(values)
     maximum = np.max(values)
@@ -180,16 +182,20 @@ def normalize(values, higher_better=True):
         / (maximum - minimum)
     )
 
+
 normalized = pd.DataFrame({
     "Product": df["Product"],
+
     "Accessibility": normalize(
         df["Opening Time (s)"],
         higher_better=False
     ),
+
     "Absorbency": normalize(
         df["Absorption (mL)"],
         higher_better=True
     ),
+
     "Affordability": normalize(
         df["Cost per Pad ($)"],
         higher_better=False
@@ -204,9 +210,9 @@ criteria = normalized[
     ]
 ].to_numpy()
 
-# ============================================
+# ==========================================
 # SECTION 1 — PRODUCT PERFORMANCE
-# ============================================
+# ==========================================
 
 st.divider()
 
@@ -228,9 +234,9 @@ st.caption(
     "higher absorption capacity is preferred."
 )
 
-# ============================================
+# ==========================================
 # SECTION 2 — INTERACTIVE WEIGHTS
-# ============================================
+# ==========================================
 
 st.divider()
 
@@ -276,9 +282,9 @@ weights = np.array([
     w_afford
 ]) / 100
 
-# ============================================
+# ==========================================
 # SECTION 3 — WEIGHTED SCORING
-# ============================================
+# ==========================================
 
 st.divider()
 
@@ -317,17 +323,35 @@ for index, row in result.iterrows():
 top_score = result.iloc[0]["Score"]
 
 top_products = result.loc[
-    np.isclose(result["Score"], top_score),
+    np.isclose(
+        result["Score"],
+        top_score
+    ),
     "Product"
 ].tolist()
 
 if len(top_products) == 1:
-    st.success(
-        "Highest-scoring product under these weights: "
-        + top_products[0]
+
+    st.markdown(
+        f"""
+        <div style="
+            background-color: #E4EFED;
+            color: #243746;
+            padding: 18px 22px;
+            border-left: 5px solid #78A8A4;
+            border-radius: 8px;
+            font-weight: 600;
+        ">
+            Highest-scoring product under
+            these weights: {top_products[0]}
+        </div>
+        """,
+        unsafe_allow_html=True
     )
+
 else:
-    st.info(
+
+    st.write(
         "Tied highest-scoring products: "
         + ", ".join(top_products)
     )
@@ -338,9 +362,9 @@ st.caption(
     "establish a universally best product."
 )
 
-# ============================================
+# ==========================================
 # SECTION 4 — SENSITIVITY ANALYSIS
-# ============================================
+# ==========================================
 
 st.divider()
 
@@ -349,7 +373,7 @@ st.header("4. Sensitivity Analysis")
 st.write("""
 Sensitivity analysis examines how the
 highest-scoring product changes when
-the criterion weights vary.
+criterion weights vary.
 """)
 
 resolution = 101
@@ -396,9 +420,9 @@ for y, absorb_weight in enumerate(weight_range):
         if len(best_indices) == 1:
             winner[y, x] = best_indices[0]
 
-# ============================================
+# ==========================================
 # SENSITIVITY FIGURE
-# ============================================
+# ==========================================
 
 fig, ax = plt.subplots(
     figsize=(8, 6)
@@ -479,9 +503,9 @@ st.caption(
     "or invalid combinations."
 )
 
-# ============================================
+# ==========================================
 # SECTION 5 — RESEARCH PURPOSE
-# ============================================
+# ==========================================
 
 st.divider()
 
